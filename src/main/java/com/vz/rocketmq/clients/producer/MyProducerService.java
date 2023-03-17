@@ -4,6 +4,7 @@ import com.vz.rocketmq.clients.enums.MQTopic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.function.BiConsumer;
 
 /**
@@ -19,7 +20,7 @@ public interface MyProducerService {
      * @param topic 消息发送的目标Topic名称
      * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
      * @param msgKey 消息索引键，可根据关键字精确查找某条消息
-     * @param body 消息体，自动转JSON形式
+     * @param msg 消息，自动转JSON形式
      * @return 是否发送成功
      * ====================================================================
      * 同步发送：
@@ -27,16 +28,33 @@ public interface MyProducerService {
      * 会在收到服务端同步响应之后才发下一条消息的通讯方式。
      * 可靠的同步传输被广泛应用于各种场景，如重要的通知消息、短消息通知等。
      */
-    boolean sendMessage(MQTopic topic, String msgTag, String msgKey, Object body);
-    boolean sendMessage(MQTopic topic, String msgTag, Object body);
-    boolean sendMessage(MQTopic topic, Object body);
+    boolean sendMessage(MQTopic topic, String msgTag, String msgKey, Object msg);
+    boolean sendMessage(MQTopic topic, String msgTag, Object msg);
+    boolean sendMessage(MQTopic topic, Object msg);
+
+    /**
+     * 批量发送消息（同步）
+     * @param topic 消息发送的目标Topic名称
+     * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
+     * @param msgKey 消息索引键，可根据关键字精确查找某条消息
+     * @param msgList 消息列表，每个消息自动转JSON形式
+     * @return 是否发送成功
+     * ====================================================================
+     * 批量同步发送：
+     * 在对吞吐率有一定要求的情况下，可以将一些消息聚成一批以后进行发送，
+     * 可以增加吞吐率，并减少API和网络调用次数。
+     * 要注意的是批量消息的大小不能超过 1MiB（否则需要自行分割），其次同一批 batch 中 topic 必须相同。
+     */
+    boolean sendMessageBatch(MQTopic topic, String msgTag, String msgKey, List<?> msgList);
+    boolean sendMessageBatch(MQTopic topic, String msgTag, List<?> msgList);
+    boolean sendMessageBatch(MQTopic topic, List<?> msgList);
 
     /**
      * 发送消息（异步）
      * @param topic 消息发送的目标Topic名称
      * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
      * @param msgKey 消息索引键，可根据关键字精确查找某条消息
-     * @param body 消息体，自动转JSON形式
+     * @param msg 消息，自动转JSON形式
      * @param callback 异步回调 <是否发送成功，msgId（成功）或者错误信息（失败）>
      * ====================================================================
      * 异步发送：
@@ -45,10 +63,10 @@ public interface MyProducerService {
      * 例如，视频上传后通知启动转码服务，转码完成后通知推送转码结果等。
      */
     void sendMessageAsync(MQTopic topic, String msgTag, String msgKey,
-                          Object body, BiConsumer<Boolean,String> callback);
+                          Object msg, BiConsumer<Boolean,String> callback);
     void sendMessageAsync(MQTopic topic, String msgTag,
-                          Object body, BiConsumer<Boolean,String> callback);
-    void sendMessageAsync(MQTopic topic, Object body,
+                          Object msg, BiConsumer<Boolean,String> callback);
+    void sendMessageAsync(MQTopic topic, Object msg,
                           BiConsumer<Boolean,String> callback);
 
     /**
@@ -56,14 +74,14 @@ public interface MyProducerService {
      * @param topic 消息发送的目标Topic名称
      * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
      * @param msgKey 消息索引键，可根据关键字精确查找某条消息
-     * @param body 消息体，自动转JSON形式
+     * @param msg 消息，自动转JSON形式
      * =====================================================================
      * 单向模式发送：
      * 发送方只负责发送消息，不等待服务端返回响应且没有回调函数触发，即只发送请求不等待应答。
      * 此方式发送消息的过程耗时非常短，一般在微秒级别。
      * 适用于某些耗时非常短，但对可靠性要求并不高的场景，例如日志收集。
      */
-    void sendMessageOneway(MQTopic topic, String msgTag, String msgKey, Object body);
-    void sendMessageOneway(MQTopic topic, String msgTag, Object body);
-    void sendMessageOneway(MQTopic topic, Object body);
+    void sendMessageOneway(MQTopic topic, String msgTag, String msgKey, Object msg);
+    void sendMessageOneway(MQTopic topic, String msgTag, Object msg);
+    void sendMessageOneway(MQTopic topic, Object msg);
 }
