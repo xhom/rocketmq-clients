@@ -88,6 +88,28 @@ public class MyProducerServiceImpl implements MyProducerService {
         sendMessageAsync(topic, null, null, body, callback);
     }
 
+    @Override
+    public void sendMessageOneway(MQTopic topic, String msgTag, String msgKey, Object body) {
+        try{
+            //构建消息
+            Message message = buildMessage(topic.getValue(), msgTag, msgKey, body);
+            //发送消息(单向，即只发送请求不等待应答)
+            defaultMQProducer.sendOneway(message);
+        }catch(Exception e){
+            logger.info("消息发送异常:{}", e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void sendMessageOneway(MQTopic topic, String msgTag, Object body) {
+        sendMessageOneway(topic, msgTag, null, body);
+    }
+
+    @Override
+    public void sendMessageOneway(MQTopic topic, Object body) {
+        sendMessageOneway(topic, null, null, body);
+    }
+
     /**
      * 构建消息
      * @param topic 主题

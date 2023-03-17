@@ -15,7 +15,7 @@ public interface MyProducerService {
     Logger logger = LoggerFactory.getLogger(MyProducerService.class);
 
     /**
-     * 发送消息
+     * 发送消息（同步）
      * @param topic 消息发送的目标Topic名称
      * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
      * @param msgKey 消息索引键，可根据关键字精确查找某条消息
@@ -39,6 +39,17 @@ public interface MyProducerService {
                           Object body, BiConsumer<Boolean,String> callback);
     void sendMessageAsync(MQTopic topic, Object body,
                           BiConsumer<Boolean,String> callback);
+
+    /**
+     * 发送消息（单向）
+     * @param topic 消息发送的目标Topic名称
+     * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
+     * @param msgKey 消息索引键，可根据关键字精确查找某条消息
+     * @param body 消息体，自动转JSON形式
+     */
+    void sendMessageOneway(MQTopic topic, String msgTag, String msgKey, Object body);
+    void sendMessageOneway(MQTopic topic, String msgTag, Object body);
+    void sendMessageOneway(MQTopic topic, Object body);
 
 
 
