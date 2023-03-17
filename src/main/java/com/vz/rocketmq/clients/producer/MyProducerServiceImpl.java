@@ -2,6 +2,7 @@ package com.vz.rocketmq.clients.producer;
 
 import com.alibaba.fastjson.JSON;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 /**
  * @author visy.wang
@@ -24,10 +26,10 @@ public class MyProducerServiceImpl implements MyProducerService {
     private DefaultMQProducer defaultMQProducer;
 
     @Override
-    public boolean sendMessage(String topic, String msgKey, String msgTag, Object body) {
+    public boolean sendMessage(String topic, String msgTag, String msgKey, Object body) {
         try{
             //构建消息
-            Message message = buildMessage(topic, msgKey, msgTag, body);
+            Message message = buildMessage(topic, msgTag, msgKey, body);
             //发送消息
             SendResult sendResult = defaultMQProducer.send(message);
             logger.info("消息发送成功，msgId={}", sendResult.getMsgId());
@@ -40,7 +42,7 @@ public class MyProducerServiceImpl implements MyProducerService {
 
     @Override
     public boolean sendMessage(String topic, String msgTag, Object body) {
-        return sendMessage(topic, null, msgTag, body);
+        return sendMessage(topic, msgTag, null, body);
     }
 
     @Override
@@ -48,15 +50,52 @@ public class MyProducerServiceImpl implements MyProducerService {
         return sendMessage(topic, null, null, body);
     }
 
+    @Override
+    public void sendMessageAsync(String topic, String msgTag, String msgKey,
+                                 Object body, BiConsumer<Boolean,String> callback) {
+        try{
+            //构建消息
+            Message message = buildMessage(topic, msgTag, msgKey, body);
+            //发送消息(异步)
+            defaultMQProducer.send(message, new SendCallback() {
+                @Override
+                public void onSuccess(SendResult sendResult) {
+                    logger.info("消息异步发送成功，msgId={}", sendResult.getMsgId());
+                    callback.accept(true, sendResult.getMsgId());
+                }
+
+                @Override
+                public void onException(Throwable throwable) {
+                    logger.info("消息异步发送失败:{}", throwable.getMessage(), throwable);
+                    callback.accept(false, throwable.getMessage());
+                }
+            });
+        }catch(Exception e){
+            logger.info("消息发送异常:{}", e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public void sendMessageAsync(String topic, String msgTag,
+                                 Object body, BiConsumer<Boolean, String> callback) {
+        sendMessageAsync(topic, msgTag, null, body, callback);
+    }
+
+    @Override
+    public void sendMessageAsync(String topic, Object body,
+                                 BiConsumer<Boolean, String> callback) {
+        sendMessageAsync(topic, null, null, body, callback);
+    }
+
     /**
      * 构建消息
      * @param topic 主题
-     * @param msgKey 消息Key
      * @param msgTag 消息Tag
+     * @param msgKey 消息Key
      * @param body 消息体
      * @return 消息
      */
-    private Message buildMessage(String topic, String msgKey, String msgTag, Object body){
+    private Message buildMessage(String topic, String msgTag, String msgKey, Object body){
         byte[] bodyBytes = JSON.toJSONString(body).getBytes(StandardCharsets.UTF_8);
         if(Objects.nonNull(msgTag)){
             if(Objects.nonNull(msgKey)){

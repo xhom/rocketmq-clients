@@ -1,6 +1,9 @@
 package com.vz.rocketmq.clients.apis;
 
+import com.vz.rocketmq.clients.config.MQConsumerConfigure;
 import com.vz.rocketmq.clients.producer.MyProducerService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -18,6 +21,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/t")
 public class MyTestController {
+    public static final Logger logger = LoggerFactory.getLogger(MyTestController.class);
+
     @Autowired
     private MyProducerService myProducerService;
 
@@ -31,6 +36,14 @@ public class MyTestController {
     @RequestMapping("/send/{msg}")
     public Boolean send(@PathVariable("msg") String msg){
         return myProducerService.sendMessage("TEST_TOPIC", msg);
+    }
+
+    @RequestMapping("/sendAsync/{msg}")
+    public Boolean sendAsync(@PathVariable("msg") String msg){
+        myProducerService.sendMessageAsync("TEST_TOPIC", msg, (isOK, message)->{
+            logger.info("sendAsync:{}, message:{}", isOK, message);
+        });
+        return true;
     }
 
 }
