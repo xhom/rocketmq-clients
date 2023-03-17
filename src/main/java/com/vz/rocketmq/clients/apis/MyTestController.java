@@ -1,6 +1,6 @@
 package com.vz.rocketmq.clients.apis;
 
-import com.vz.rocketmq.clients.config.MQConsumerConfigure;
+import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.producer.MyProducerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,12 +35,12 @@ public class MyTestController {
 
     @RequestMapping("/send/{msg}")
     public Boolean send(@PathVariable("msg") String msg){
-        return myProducerService.sendMessage("TEST_TOPIC", msg);
+        return myProducerService.sendMessage(MQTopic.TEST_TOPIC, msg);
     }
 
     @RequestMapping("/sendAsync/{msg}")
     public Boolean sendAsync(@PathVariable("msg") String msg){
-        myProducerService.sendMessageAsync("TEST_TOPIC", msg, (isOK, message)->{
+        myProducerService.sendMessageAsync(MQTopic.TEST_TOPIC, msg, (isOK, message)->{
             logger.info("sendAsync:{}, message:{}", isOK, message);
         });
         return true;

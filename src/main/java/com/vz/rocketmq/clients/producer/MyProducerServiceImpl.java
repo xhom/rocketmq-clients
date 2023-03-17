@@ -1,6 +1,7 @@
 package com.vz.rocketmq.clients.producer;
 
 import com.alibaba.fastjson.JSON;
+import com.vz.rocketmq.clients.enums.MQTopic;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
@@ -26,10 +27,10 @@ public class MyProducerServiceImpl implements MyProducerService {
     private DefaultMQProducer defaultMQProducer;
 
     @Override
-    public boolean sendMessage(String topic, String msgTag, String msgKey, Object body) {
+    public boolean sendMessage(MQTopic topic, String msgTag, String msgKey, Object body) {
         try{
             //构建消息
-            Message message = buildMessage(topic, msgTag, msgKey, body);
+            Message message = buildMessage(topic.getValue(), msgTag, msgKey, body);
             //发送消息
             SendResult sendResult = defaultMQProducer.send(message);
             logger.info("消息发送成功，msgId={}", sendResult.getMsgId());
@@ -41,21 +42,21 @@ public class MyProducerServiceImpl implements MyProducerService {
     }
 
     @Override
-    public boolean sendMessage(String topic, String msgTag, Object body) {
+    public boolean sendMessage(MQTopic topic, String msgTag, Object body) {
         return sendMessage(topic, msgTag, null, body);
     }
 
     @Override
-    public boolean sendMessage(String topic, Object body) {
+    public boolean sendMessage(MQTopic topic, Object body) {
         return sendMessage(topic, null, null, body);
     }
 
     @Override
-    public void sendMessageAsync(String topic, String msgTag, String msgKey,
+    public void sendMessageAsync(MQTopic topic, String msgTag, String msgKey,
                                  Object body, BiConsumer<Boolean,String> callback) {
         try{
             //构建消息
-            Message message = buildMessage(topic, msgTag, msgKey, body);
+            Message message = buildMessage(topic.getValue(), msgTag, msgKey, body);
             //发送消息(异步)
             defaultMQProducer.send(message, new SendCallback() {
                 @Override
@@ -76,13 +77,13 @@ public class MyProducerServiceImpl implements MyProducerService {
     }
 
     @Override
-    public void sendMessageAsync(String topic, String msgTag,
+    public void sendMessageAsync(MQTopic topic, String msgTag,
                                  Object body, BiConsumer<Boolean, String> callback) {
         sendMessageAsync(topic, msgTag, null, body, callback);
     }
 
     @Override
-    public void sendMessageAsync(String topic, Object body,
+    public void sendMessageAsync(MQTopic topic, Object body,
                                  BiConsumer<Boolean, String> callback) {
         sendMessageAsync(topic, null, null, body, callback);
     }

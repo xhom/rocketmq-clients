@@ -1,11 +1,10 @@
 package com.vz.rocketmq.clients.producer;
 
-import org.apache.rocketmq.client.producer.SendResult;
+import com.vz.rocketmq.clients.enums.MQTopic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 
 /**
  * @author visy.wang
@@ -22,9 +21,9 @@ public interface MyProducerService {
      * @param msgKey 消息索引键，可根据关键字精确查找某条消息
      * @param body 消息体，自动转JSON形式
      */
-    boolean sendMessage(String topic, String msgTag, String msgKey, Object body);
-    boolean sendMessage(String topic, String msgTag, Object body);
-    boolean sendMessage(String topic, Object body);
+    boolean sendMessage(MQTopic topic, String msgTag, String msgKey, Object body);
+    boolean sendMessage(MQTopic topic, String msgTag, Object body);
+    boolean sendMessage(MQTopic topic, Object body);
 
     /**
      * 发送消息（异步）
@@ -34,11 +33,11 @@ public interface MyProducerService {
      * @param body 消息体，自动转JSON形式
      * @param callback 异步回调 <是否发送成功，msgId（成功）或者错误信息（失败）>
      */
-    void sendMessageAsync(String topic, String msgTag, String msgKey,
+    void sendMessageAsync(MQTopic topic, String msgTag, String msgKey,
                           Object body, BiConsumer<Boolean,String> callback);
-    void sendMessageAsync(String topic, String msgTag,
+    void sendMessageAsync(MQTopic topic, String msgTag,
                           Object body, BiConsumer<Boolean,String> callback);
-    void sendMessageAsync(String topic, Object body,
+    void sendMessageAsync(MQTopic topic, Object body,
                           BiConsumer<Boolean,String> callback);
 
 
