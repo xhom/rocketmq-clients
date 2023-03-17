@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
 
 /**
  * @author visy.wang
@@ -61,10 +62,10 @@ public class MyProducerServiceImpl implements MyProducerService {
             List<Message> messageList = buildMessageList(topic.getValue(), msgTag, msgKey, bodyList);
             //发送消息
             SendResult sendResult = defaultMQProducer.send(messageList);
-            logger.info("消息发送成功，msgId={}", sendResult.getMsgId());
+            logger.info("批量消息发送成功，msgId={}", sendResult.getMsgId());
             return true;
         }catch(Exception e){
-            logger.info("消息发送异常:{}", e.getMessage(), e);
+            logger.info("批量消息发送异常:{}", e.getMessage(), e);
         }
         return false;
     }
@@ -89,13 +90,13 @@ public class MyProducerServiceImpl implements MyProducerService {
             defaultMQProducer.send(message, new SendCallback() {
                 @Override
                 public void onSuccess(SendResult sendResult) {
-                    logger.info("消息异步发送成功，msgId={}", sendResult.getMsgId());
+                    logger.info("异步消息发送成功，msgId={}", sendResult.getMsgId());
                     callback.accept(true, sendResult.getMsgId());
                 }
 
                 @Override
                 public void onException(Throwable throwable) {
-                    logger.info("消息异步发送失败:{}", throwable.getMessage(), throwable);
+                    logger.info("异步消息发送失败:{}", throwable.getMessage(), throwable);
                     callback.accept(false, throwable.getMessage());
                 }
             });
@@ -143,7 +144,7 @@ public class MyProducerServiceImpl implements MyProducerService {
      * @param topic 主题
      * @param msgTag 消息Tag
      * @param msgKey 消息Key
-     * @param msg 消息体
+     * @param msg 消息
      * @return 消息
      */
     private Message buildMessage(String topic, String msgTag, String msgKey, Object msg){
@@ -156,11 +157,18 @@ public class MyProducerServiceImpl implements MyProducerService {
         }
         return new Message(topic, body);
     }
+
+    /**
+     * 构建批量消息
+     * @param topic 主题
+     * @param msgTag 消息Tag
+     * @param msgKey 消息Key
+     * @param msgList 消息列表
+     * @return 消息列表
+     */
     private List<Message> buildMessageList(String topic, String msgTag, String msgKey, List<?> msgList){
-        List<Message> messageList = new ArrayList<>();
-        for(Object msg: msgList){
-            messageList.add(buildMessage(topic, msgTag, msgKey, msg));
-        }
-        return messageList;
+        return msgList.stream().map(msg -> {
+            return buildMessage(topic, msgTag, msgKey, msg);
+        }).collect(Collectors.toList());
     }
 }
