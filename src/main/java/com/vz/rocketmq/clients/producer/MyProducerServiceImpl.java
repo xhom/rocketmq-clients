@@ -81,6 +81,33 @@ public class MyProducerServiceImpl implements MyProducerService {
     }
 
     @Override
+    public boolean sendMessageWithDelay(MQTopic topic, String msgTag, String msgKey, Object msg, int delayLevel) {
+        try{
+            //构建消息
+            Message message = buildMessage(topic.getValue(), msgTag, msgKey, msg);
+            //设置延迟等级
+            message.setDelayTimeLevel(delayLevel);
+            //发送消息
+            SendResult sendResult = defaultMQProducer.send(message);
+            logger.info("消息发送成功，msgId={}", sendResult.getMsgId());
+            return true;
+        }catch(Exception e){
+            logger.info("消息发送异常:{}", e.getMessage(), e);
+        }
+        return false;
+    }
+
+    @Override
+    public boolean sendMessageWithDelay(MQTopic topic, String msgTag, Object msg, int delayLevel) {
+        return sendMessageWithDelay(topic, msgTag, null, msg, delayLevel);
+    }
+
+    @Override
+    public boolean sendMessageWithDelay(MQTopic topic, Object msg, int delayLevel) {
+        return sendMessageWithDelay(topic, null, null, msg, delayLevel);
+    }
+
+    @Override
     public void sendMessageAsync(MQTopic topic, String msgTag, String msgKey,
                                  Object msg, BiConsumer<Boolean,String> callback) {
         try{

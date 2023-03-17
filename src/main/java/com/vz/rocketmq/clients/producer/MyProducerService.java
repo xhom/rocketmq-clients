@@ -50,6 +50,24 @@ public interface MyProducerService {
     boolean sendMessageBatch(MQTopic topic, List<?> msgList);
 
     /**
+     * 发送延迟消息（同步）
+     * @param topic 消息发送的目标Topic名称
+     * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
+     * @param msgKey 消息索引键，可根据关键字精确查找某条消息
+     * @param msg 消息，自动转JSON形式
+     * @param delayLevel 延迟等级： 1-18
+     * @return 是否发送成功
+     * ====================================================================
+     * 延迟消息：
+     * 延时消息的实现逻辑需要先经过定时存储等待触发，延时时间到达后才会被投递给消费者。
+     * 因此，如果将大量延时消息的定时时间设置为同一时刻，
+     * 则到达该时刻后会有大量消息同时需要被处理，会造成系统压力过大，导致消息分发延迟，影响定时精度。
+     */
+    boolean sendMessageWithDelay(MQTopic topic, String msgTag, String msgKey, Object msg, int delayLevel);
+    boolean sendMessageWithDelay(MQTopic topic, String msgTag, Object msg, int delayLevel);
+    boolean sendMessageWithDelay(MQTopic topic, Object msg, int delayLevel);
+
+    /**
      * 发送消息（异步）
      * @param topic 消息发送的目标Topic名称
      * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
