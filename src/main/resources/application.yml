@@ -1,0 +1,45 @@
+server:
+  port: 8889
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: rocketmq-clients
+
+logging:
+  config: classpath:logback.xml
+rocketmq:
+  # 生产者配置
+  producer:
+    # 配置开关 true/false
+    isOn: true
+    # 生产组名称
+    groupName: ${spring.application.name}
+    # MQ NameServer地址
+    nameSrvAddr: 127.0.0.1:9876
+    # 消息最大长度 1024KB * 4 (4M)
+    maxMsgSize: 4096
+    # 消息发送超时时间
+    timeOut: 3000
+    # 发送失败重试次数
+    retryTimes: 2
+  # 消费者配置
+  consumer:
+    # 配置开关 true/false
+    isOn: true
+    # 消费组名称
+    groupName: CONSUME_GROUP_1
+    # MQ NameServer地址
+    nameSrvAddr: 127.0.0.1:9876
+    # 订阅的topic+tags 格式(自己约定的): topic~tag1;topic~tag2;topic~* （*代表所有tag）
+    topics: TEST_TOPIC~*
+    # 消费者最小线程数
+    minThreads: 1
+    # 消费者最大线程数
+    maxThreads: 3
+    # 单词最大消费数
+    maxConsumeSize: 1
