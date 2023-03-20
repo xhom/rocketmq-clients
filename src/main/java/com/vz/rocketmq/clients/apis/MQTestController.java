@@ -46,4 +46,15 @@ public class MQTestController {
         return true;
     }
 
+    @RequestMapping("/sendOrderly/{msg}")
+    public Boolean sendOrderly(@PathVariable("msg") String msg){
+        Integer buzId = Math.abs(msg.hashCode());
+        logger.info("buzId={}", buzId);
+        mqProducerService.sendMessageOrderly(MQTopic.TEST_TOPIC, msg, buzId, mqNum->{
+            int index = buzId % mqNum;
+            logger.info("队列索引：{}, 队列总数：{}", index, mqNum);
+            return index;
+        });
+        return true;
+    }
 }
