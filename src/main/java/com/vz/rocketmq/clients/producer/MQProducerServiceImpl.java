@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
  * @date 2023/3/17 13:52
  */
 @Service
-public class MyProducerServiceImpl implements MyProducerService {
+public class MQProducerServiceImpl implements MQProducerService {
     /**
      * 一般来说，创建一个生产者就够了
      */

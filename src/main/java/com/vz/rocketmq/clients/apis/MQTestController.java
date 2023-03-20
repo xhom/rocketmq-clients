@@ -1,7 +1,7 @@
 package com.vz.rocketmq.clients.apis;
 
 import com.vz.rocketmq.clients.enums.MQTopic;
-import com.vz.rocketmq.clients.producer.MyProducerService;
+import com.vz.rocketmq.clients.producer.MQProducerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,11 +20,11 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/t")
-public class MyTestController {
-    public static final Logger logger = LoggerFactory.getLogger(MyTestController.class);
+public class MQTestController {
+    public static final Logger logger = LoggerFactory.getLogger(MQTestController.class);
 
     @Autowired
-    private MyProducerService myProducerService;
+    private MQProducerService mqProducerService;
 
     @RequestMapping("/t")
     public Map<String,Object> test(){
@@ -35,12 +35,12 @@ public class MyTestController {
 
     @RequestMapping("/send/{msg}")
     public Boolean send(@PathVariable("msg") String msg){
-        return myProducerService.sendMessage(MQTopic.TEST_TOPIC, msg);
+        return mqProducerService.sendMessage(MQTopic.TEST_TOPIC, msg);
     }
 
     @RequestMapping("/sendAsync/{msg}")
     public Boolean sendAsync(@PathVariable("msg") String msg){
-        myProducerService.sendMessageAsync(MQTopic.TEST_TOPIC, msg, (isOK, message)->{
+        mqProducerService.sendMessageAsync(MQTopic.TEST_TOPIC, msg, (isOK, message)->{
             logger.info("sendAsync:{}, message:{}", isOK, message);
         });
         return true;

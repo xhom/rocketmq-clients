@@ -13,8 +13,8 @@ import java.util.function.Function;
  * @description: 生产者服务
  * @date 2023/3/17 13:52
  */
-public interface MyProducerService {
-    Logger logger = LoggerFactory.getLogger(MyProducerService.class);
+public interface MQProducerService {
+    Logger logger = LoggerFactory.getLogger(MQProducerService.class);
 
     /**
      * 发送消息（同步）
