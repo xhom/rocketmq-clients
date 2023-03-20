@@ -12,18 +12,19 @@ spring:
 
 logging:
   config: classpath:logback.xml
+
 rocketmq:
   # 生产者配置
   producer:
     # 配置开关 true/false
     isOn: true
     # 生产组名称
-    groupName: ${spring.application.name}
+    groupName: PRODUCER_GROUP_1
     # MQ NameServer地址
     nameSrvAddr: 127.0.0.1:9876
-    # 消息最大长度 1024KB * 4 (4M)
-    maxMsgSize: 4096
-    # 消息发送超时时间
+    # 消息最大长度，单位：B 默认：4M = 1024 * 1024 * 4
+    maxMsgSize: 4194304
+    # 消息发送超时时间，单位：ms，默认：3s
     timeOut: 3000
     # 发送失败重试次数
     retryTimes: 2

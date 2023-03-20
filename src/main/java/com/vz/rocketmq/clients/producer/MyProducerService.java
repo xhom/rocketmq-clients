@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * @author visy.wang
@@ -20,7 +21,7 @@ public interface MyProducerService {
      * @param topic 消息发送的目标Topic名称
      * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
      * @param msgKey 消息索引键，可根据关键字精确查找某条消息
-     * @param msg 消息，自动转JSON形式
+     * @param msg 消息内容
      * @return 是否发送成功
      * ====================================================================
      * 同步发送：
@@ -32,14 +33,37 @@ public interface MyProducerService {
     boolean sendMessage(MQTopic topic, String msgTag, Object msg);
     boolean sendMessage(MQTopic topic, Object msg);
 
-    boolean sendMessageOrderly(MQTopic topic, String msgTag, String msgKey, List<?> msgList);
-
     /**
-     * 批量发送消息（同步）
+     * 发送消息（顺序）
      * @param topic 消息发送的目标Topic名称
      * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
      * @param msgKey 消息索引键，可根据关键字精确查找某条消息
-     * @param msgList 消息列表，每个消息自动转JSON形式
+     * @param msg 消息内容
+     * @param buzId 业务ID（用于确定队列索引的字段）
+     * @param selector 队列选择器 <队列总数，选中的队列索引>
+     * @return 是否发送成功
+     * ====================================================================
+     * 顺序消息：
+     * RocketMQ通过生产者和服务端的协议保障单个生产者串行地发送消息，并按序存储和持久化。
+     * 如需保证消息生产的顺序性，则必须满足以下条件：
+     * 1.单一生产者：消息生产的顺序性仅支持单一生产者，不同生产者分布在不同的系统，
+     * 即使设置相同的分区键，不同生产者之间产生的消息也无法判定其先后顺序。
+     * 2.串行发送：生产者客户端支持多线程安全访问，
+     * 但如果生产者使用多线程并行发送，则不同线程间产生的消息将无法判定其先后顺序。
+     */
+    boolean sendMessageOrderly(MQTopic topic, String msgTag, String msgKey, Object msg,
+                               Object buzId, Function<Integer, Integer> selector);
+    boolean sendMessageOrderly(MQTopic topic, String msgTag, Object msg,
+                               Object buzId, Function<Integer, Integer> selector);
+    boolean sendMessageOrderly(MQTopic topic, Object msg,
+                               Object buzId, Function<Integer, Integer> selector);
+
+    /**
+     * 发送消息（批量）
+     * @param topic 消息发送的目标Topic名称
+     * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
+     * @param msgKey 消息索引键，可根据关键字精确查找某条消息
+     * @param msgList 消息内容列表
      * @return 是否发送成功
      * ====================================================================
      * 批量同步发送：
@@ -52,11 +76,11 @@ public interface MyProducerService {
     boolean sendMessageBatch(MQTopic topic, List<?> msgList);
 
     /**
-     * 发送延迟消息（同步）
+     * 发送消息（延迟）
      * @param topic 消息发送的目标Topic名称
      * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
      * @param msgKey 消息索引键，可根据关键字精确查找某条消息
-     * @param msg 消息，自动转JSON形式
+     * @param msg 消息内容
      * @param delayLevel 延迟等级： 1-18
      * @return 是否发送成功
      * ====================================================================
@@ -74,7 +98,7 @@ public interface MyProducerService {
      * @param topic 消息发送的目标Topic名称
      * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
      * @param msgKey 消息索引键，可根据关键字精确查找某条消息
-     * @param msg 消息，自动转JSON形式
+     * @param msg 消息内容
      * @param callback 异步回调 <是否发送成功，msgId（成功）或者错误信息（失败）>
      * ====================================================================
      * 异步发送：
@@ -94,7 +118,7 @@ public interface MyProducerService {
      * @param topic 消息发送的目标Topic名称
      * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
      * @param msgKey 消息索引键，可根据关键字精确查找某条消息
-     * @param msg 消息，自动转JSON形式
+     * @param msg 消息内容
      * =====================================================================
      * 单向模式发送：
      * 发送方只负责发送消息，不等待服务端返回响应且没有回调函数触发，即只发送请求不等待应答。

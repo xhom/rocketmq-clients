@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -58,28 +59,30 @@ public class MyProducerServiceImpl implements MyProducerService {
     }
 
     @Override
-    public boolean sendMessageOrderly(MQTopic topic, String msgTag, String msgKey, List<?> msgList) {
-        String[] tags = new String[] {"TagA", "TagB", "TagC", "TagD", "TagE"};
+    public boolean sendMessageOrderly(MQTopic topic, String msgTag, String msgKey, Object msg,
+                                      Object orderId, Function<Integer, Integer> selector) {
         try{
-            for (int i=0; i < msgList.size(); i++) {
-                Object msg = msgList.get(i);
-                int orderId = i % 10;
-                Message message = buildMessage(topic.getValue(), tags[i % tags.length], msgKey + i, msg);
-                SendResult sendResult = defaultMQProducer.send(message, (List<MessageQueue> mqs, Message _msg, Object arg) -> {
-
-                    Integer id = (Integer) arg;
-                    int index = id % mqs.size();
-                    return mqs.get(index);
-
-                }, orderId);
-
-                System.out.printf("%s%n", sendResult);
-            }
-
+            Message message = buildMessage(topic.getValue(), msgTag, msgKey, msg);
+            SendResult sendResult = defaultMQProducer.send(message, (List<MessageQueue> mqs, Message _msg, Object arg) -> {
+                int index = selector.apply(mqs.size());
+                return mqs.get(index);
+            }, orderId);
+            logger.info("消息发送成功，msgId={}", sendResult.getMsgId());
+            return true;
         }catch (MQClientException | RemotingException | MQBrokerException | InterruptedException e){
-            e.printStackTrace();
+            logger.info("消息发送异常:{}", e.getMessage(), e);
         }
         return false;
+    }
+
+    @Override
+    public boolean sendMessageOrderly(MQTopic topic, String msgTag, Object msg, Object buzId, Function<Integer, Integer> selector) {
+        return sendMessageOrderly(topic, msgTag, null, msg, buzId, selector);
+    }
+
+    @Override
+    public boolean sendMessageOrderly(MQTopic topic, Object msg, Object buzId, Function<Integer, Integer> selector) {
+        return sendMessageOrderly(topic, null, null, msg, buzId, selector);
     }
 
     @Override
