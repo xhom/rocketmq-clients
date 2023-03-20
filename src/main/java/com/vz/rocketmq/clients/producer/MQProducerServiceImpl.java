@@ -4,15 +4,14 @@ import com.alibaba.fastjson.JSON;
 import com.vz.rocketmq.clients.enums.MQTopic;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
-import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.SendCallback;
-import org.apache.rocketmq.client.producer.SendResult;
+import org.apache.rocketmq.client.producer.*;
 import org.apache.rocketmq.common.message.Message;
 import org.apache.rocketmq.common.message.MessageQueue;
 import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
@@ -28,10 +27,16 @@ import java.util.stream.Collectors;
 @Service
 public class MQProducerServiceImpl implements MQProducerService {
     /**
+     * 默认生产者
      * 一般来说，创建一个生产者就够了
      */
     @Autowired
     private DefaultMQProducer defaultMQProducer;
+    /**
+     * 事务生产者
+     */
+    @Autowired
+    private TransactionMQProducer transactionMQProducer;
 
     @Override
     public boolean sendMessage(MQTopic topic, String msgTag, String msgKey, Object msg) {
@@ -194,6 +199,21 @@ public class MQProducerServiceImpl implements MQProducerService {
     @Override
     public void sendMessageOneway(MQTopic topic, Object msg) {
         sendMessageOneway(topic, null, null, msg);
+    }
+
+    @Override
+    public boolean sendTransactionMessage(MQTopic topic, String msgTag, String msgKey, Object msg) {
+        try{
+            //构建消息
+            Message message = buildMessage(topic.getValue(), msgTag, msgKey, msg);
+            //发送事务消息
+            TransactionSendResult sendResult = transactionMQProducer.sendMessageInTransaction(message, null);
+            logger.info("事务消息发送成功，msgId={}", sendResult.getMsgId());
+            return true;
+        }catch (MQClientException e) {
+            logger.info("事务消息发送失败:{}", e.getMessage(), e);
+        }
+        return false;
     }
 
     /**

@@ -28,6 +28,9 @@ rocketmq:
     timeOut: 3000
     # 发送失败重试次数
     retryTimes: 2
+    # 事务生产者分组名
+    transGroupName: TRANSACTION_PRODUCER_GROUP_1
+
   # 消费者配置
   consumer:
     # 配置开关 true/false

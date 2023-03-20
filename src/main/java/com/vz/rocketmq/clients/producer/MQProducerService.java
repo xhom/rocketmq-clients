@@ -128,4 +128,6 @@ public interface MQProducerService {
     void sendMessageOneway(MQTopic topic, String msgTag, String msgKey, Object msg);
     void sendMessageOneway(MQTopic topic, String msgTag, Object msg);
     void sendMessageOneway(MQTopic topic, Object msg);
+
+    boolean sendTransactionMessage(MQTopic topic, String msgTag, String msgKey, Object msg);
 }
