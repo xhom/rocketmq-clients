@@ -32,6 +32,8 @@ public interface MyProducerService {
     boolean sendMessage(MQTopic topic, String msgTag, Object msg);
     boolean sendMessage(MQTopic topic, Object msg);
 
+    boolean sendMessageOrderly(MQTopic topic, String msgTag, String msgKey, List<?> msgList);
+
     /**
      * 批量发送消息（同步）
      * @param topic 消息发送的目标Topic名称

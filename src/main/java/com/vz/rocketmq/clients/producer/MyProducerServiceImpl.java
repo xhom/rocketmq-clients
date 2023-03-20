@@ -2,16 +2,18 @@ package com.vz.rocketmq.clients.producer;
 
 import com.alibaba.fastjson.JSON;
 import com.vz.rocketmq.clients.enums.MQTopic;
+import org.apache.rocketmq.client.exception.MQBrokerException;
+import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
 import org.apache.rocketmq.client.producer.SendCallback;
 import org.apache.rocketmq.client.producer.SendResult;
 import org.apache.rocketmq.common.message.Message;
+import org.apache.rocketmq.common.message.MessageQueue;
+import org.apache.rocketmq.remoting.exception.RemotingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -56,10 +58,35 @@ public class MyProducerServiceImpl implements MyProducerService {
     }
 
     @Override
-    public boolean sendMessageBatch(MQTopic topic, String msgTag, String msgKey, List<?> bodyList) {
+    public boolean sendMessageOrderly(MQTopic topic, String msgTag, String msgKey, List<?> msgList) {
+        String[] tags = new String[] {"TagA", "TagB", "TagC", "TagD", "TagE"};
+        try{
+            for (int i=0; i < msgList.size(); i++) {
+                Object msg = msgList.get(i);
+                int orderId = i % 10;
+                Message message = buildMessage(topic.getValue(), tags[i % tags.length], msgKey + i, msg);
+                SendResult sendResult = defaultMQProducer.send(message, (List<MessageQueue> mqs, Message _msg, Object arg) -> {
+
+                    Integer id = (Integer) arg;
+                    int index = id % mqs.size();
+                    return mqs.get(index);
+
+                }, orderId);
+
+                System.out.printf("%s%n", sendResult);
+            }
+
+        }catch (MQClientException | RemotingException | MQBrokerException | InterruptedException e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean sendMessageBatch(MQTopic topic, String msgTag, String msgKey, List<?> msgList) {
         try{
             //构建消息
-            List<Message> messageList = buildMessageList(topic.getValue(), msgTag, msgKey, bodyList);
+            List<Message> messageList = buildMessageList(topic.getValue(), msgTag, msgKey, msgList);
             //发送消息
             SendResult sendResult = defaultMQProducer.send(messageList);
             logger.info("批量消息发送成功，msgId={}", sendResult.getMsgId());
