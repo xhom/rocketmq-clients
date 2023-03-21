@@ -202,10 +202,10 @@ public class MQProducerServiceImpl implements MQProducerService {
     }
 
     @Override
-    public boolean sendTransactionMessage(MQTopic topic, String msgTag, String msgKey, Object msg) {
+    public boolean sendTransactionMessage(MQTopic topic, String msgTag, Object msg) {
         try{
             //构建消息
-            Message message = buildMessage(topic.getValue(), msgTag, msgKey, msg);
+            Message message = buildMessage(topic.getValue(), msgTag, null, msg);
             //发送事务消息
             TransactionSendResult sendResult = transactionMQProducer.sendMessageInTransaction(message, null);
             logger.info("事务消息发送成功，msgId={}", sendResult.getMsgId());
@@ -214,6 +214,11 @@ public class MQProducerServiceImpl implements MQProducerService {
             logger.info("事务消息发送失败:{}", e.getMessage(), e);
         }
         return false;
+    }
+
+    @Override
+    public boolean sendTransactionMessage(MQTopic topic, Object msg) {
+        return sendTransactionMessage(topic, null, msg);
     }
 
     /**

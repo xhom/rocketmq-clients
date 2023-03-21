@@ -129,5 +129,14 @@ public interface MQProducerService {
     void sendMessageOneway(MQTopic topic, String msgTag, Object msg);
     void sendMessageOneway(MQTopic topic, Object msg);
 
-    boolean sendTransactionMessage(MQTopic topic, String msgTag, String msgKey, Object msg);
+    /**
+     * 事务消息
+     * @param topic 消息发送的目标Topic名称
+     * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
+     * @param msg 消息内容
+     * @return 是否发送成功
+     * 需配合事务监听器使用
+     */
+    boolean sendTransactionMessage(MQTopic topic, String msgTag, Object msg);
+    boolean sendTransactionMessage(MQTopic topic, Object msg);
 }
