@@ -11,7 +11,8 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum MQTopic {
-    TEST_TOPIC("TEST_TOPIC", "测试主题");
+    TEST_TOPIC("TEST_TOPIC", "测试主题"),
+    TEST_TOPIC_TRANSACTION("TEST_TOPIC_TRANSACTION", "测试主题(事务消息)");
 
     /**
      * 主题值，必须唯一，不可重复

@@ -1,12 +1,13 @@
 package com.vz.rocketmq.clients.config;
 
+import com.vz.rocketmq.clients.transaction.MQTransactionListener;
 import lombok.Data;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
-import org.apache.rocketmq.client.producer.TransactionListener;
 import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -51,6 +52,9 @@ public class MQProducerConfigure {
      */
     private String transGroupName;
 
+    @Autowired
+    private MQTransactionListener transactionListener;
+
     @Bean
     @ConditionalOnProperty(prefix = "rocketmq.producer", value = "isOn", havingValue = "true")
     public DefaultMQProducer defaultMQProducer() throws MQClientException {
@@ -75,14 +79,14 @@ public class MQProducerConfigure {
         TransactionMQProducer producer = new TransactionMQProducer(transGroupName);
         producer.setNamesrvAddr(nameSrvAddr);
         //创建事务监听器
-        TransactionListener transactionListener = new MQTransactionListener();
+        //MQTransactionListener transactionListener = new MQTransactionListener();
         //创建回查的线程池
         int corePoolSize = 2, maxPoolSize = 5;
         long keepAliveTime = 100;
         ArrayBlockingQueue<Runnable> blockingQueue = new ArrayBlockingQueue<>(2000);
         ExecutorService executorService = new ThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTime, TimeUnit.SECONDS, blockingQueue, r -> {
             Thread thread = new Thread(r);
-            thread.setName("客户端-事务回查线程");
+            thread.setName("RMQ-事务回查线程");
             return thread;
         });
         //设置事务回查的线程池,如果不设置也会默认生成一个

@@ -1,6 +1,8 @@
 package com.vz.rocketmq.clients.producer;
 
 import com.vz.rocketmq.clients.enums.MQTopic;
+import com.vz.rocketmq.clients.enums.MsgTag;
+import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,8 +31,8 @@ public interface MQProducerService {
      * 会在收到服务端同步响应之后才发下一条消息的通讯方式。
      * 可靠的同步传输被广泛应用于各种场景，如重要的通知消息、短消息通知等。
      */
-    boolean sendMessage(MQTopic topic, String msgTag, String msgKey, Object msg);
-    boolean sendMessage(MQTopic topic, String msgTag, Object msg);
+    boolean sendMessage(MQTopic topic, MsgTag msgTag, String msgKey, Object msg);
+    boolean sendMessage(MQTopic topic, MsgTag msgTag, Object msg);
     boolean sendMessage(MQTopic topic, Object msg);
 
     /**
@@ -51,9 +53,9 @@ public interface MQProducerService {
      * 2.串行发送：生产者客户端支持多线程安全访问，
      * 但如果生产者使用多线程并行发送，则不同线程间产生的消息将无法判定其先后顺序。
      */
-    boolean sendMessageOrderly(MQTopic topic, String msgTag, String msgKey, Object msg,
+    boolean sendMessageOrderly(MQTopic topic, MsgTag msgTag, String msgKey, Object msg,
                                Object buzId, Function<Integer, Integer> selector);
-    boolean sendMessageOrderly(MQTopic topic, String msgTag, Object msg,
+    boolean sendMessageOrderly(MQTopic topic, MsgTag msgTag, Object msg,
                                Object buzId, Function<Integer, Integer> selector);
     boolean sendMessageOrderly(MQTopic topic, Object msg,
                                Object buzId, Function<Integer, Integer> selector);
@@ -71,8 +73,8 @@ public interface MQProducerService {
      * 可以增加吞吐率，并减少API和网络调用次数。
      * 要注意的是批量消息的大小不能超过 1MiB（否则需要自行分割），其次同一批 batch 中 topic 必须相同。
      */
-    boolean sendMessageBatch(MQTopic topic, String msgTag, String msgKey, List<?> msgList);
-    boolean sendMessageBatch(MQTopic topic, String msgTag, List<?> msgList);
+    boolean sendMessageBatch(MQTopic topic, MsgTag msgTag, String msgKey, List<?> msgList);
+    boolean sendMessageBatch(MQTopic topic, MsgTag msgTag, List<?> msgList);
     boolean sendMessageBatch(MQTopic topic, List<?> msgList);
 
     /**
@@ -89,8 +91,8 @@ public interface MQProducerService {
      * 因此，如果将大量延时消息的定时时间设置为同一时刻，
      * 则到达该时刻后会有大量消息同时需要被处理，会造成系统压力过大，导致消息分发延迟，影响定时精度。
      */
-    boolean sendMessageWithDelay(MQTopic topic, String msgTag, String msgKey, Object msg, int delayLevel);
-    boolean sendMessageWithDelay(MQTopic topic, String msgTag, Object msg, int delayLevel);
+    boolean sendMessageWithDelay(MQTopic topic, MsgTag msgTag, String msgKey, Object msg, int delayLevel);
+    boolean sendMessageWithDelay(MQTopic topic, MsgTag msgTag, Object msg, int delayLevel);
     boolean sendMessageWithDelay(MQTopic topic, Object msg, int delayLevel);
 
     /**
@@ -106,9 +108,9 @@ public interface MQProducerService {
      * 异步发送一般用于链路耗时较长，对响应时间较为敏感的业务场景。
      * 例如，视频上传后通知启动转码服务，转码完成后通知推送转码结果等。
      */
-    void sendMessageAsync(MQTopic topic, String msgTag, String msgKey,
+    void sendMessageAsync(MQTopic topic, MsgTag msgTag, String msgKey,
                           Object msg, BiConsumer<Boolean,String> callback);
-    void sendMessageAsync(MQTopic topic, String msgTag,
+    void sendMessageAsync(MQTopic topic, MsgTag msgTag,
                           Object msg, BiConsumer<Boolean,String> callback);
     void sendMessageAsync(MQTopic topic, Object msg,
                           BiConsumer<Boolean,String> callback);
@@ -125,8 +127,8 @@ public interface MQProducerService {
      * 此方式发送消息的过程耗时非常短，一般在微秒级别。
      * 适用于某些耗时非常短，但对可靠性要求并不高的场景，例如日志收集。
      */
-    void sendMessageOneway(MQTopic topic, String msgTag, String msgKey, Object msg);
-    void sendMessageOneway(MQTopic topic, String msgTag, Object msg);
+    void sendMessageOneway(MQTopic topic, MsgTag msgTag, String msgKey, Object msg);
+    void sendMessageOneway(MQTopic topic, MsgTag msgTag, Object msg);
     void sendMessageOneway(MQTopic topic, Object msg);
 
     /**
@@ -137,6 +139,8 @@ public interface MQProducerService {
      * @return 是否发送成功
      * 需配合事务监听器使用
      */
-    boolean sendTransactionMessage(MQTopic topic, String msgTag, Object msg);
+    boolean sendTransactionMessage(MQTopic topic, MsgTag msgTag, Object msg);
     boolean sendTransactionMessage(MQTopic topic, Object msg);
+
+    boolean sendTransactionMessage(MQTopic topic, MsgTag msgTag, Object msg, LocalTransactionHandler handler);
 }

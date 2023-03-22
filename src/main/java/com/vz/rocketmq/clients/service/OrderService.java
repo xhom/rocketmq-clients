@@ -1,0 +1,54 @@
+package com.vz.rocketmq.clients.service;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
+import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
+import org.apache.rocketmq.common.message.Message;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.atomic.AtomicInteger;
+
+/**
+ * @author visy.wang
+ * @description: 订单服务（测试事务消息）
+ * @date 2023/3/21 10:49
+ */
+@Service("orderService")
+public class OrderService implements LocalTransactionHandler {
+    Logger logger = LoggerFactory.getLogger(OrderService.class);
+
+    //测试用
+    private final AtomicInteger transactionIndex = new AtomicInteger(0);
+
+    /**
+     * 添加订单
+     * @param orderId 订单号
+     * @param transactionId 事务ID
+     */
+    public void addOrder(String orderId, String transactionId) {
+        int t = transactionIndex.getAndIncrement();
+
+        if(t%2 == 0){
+            logger.info("订单添加成功：orderId={}", orderId);
+            //记录事务状态
+            TestCache.commit(transactionId);
+        }else{
+            int i = 3 / 0;
+        }
+    }
+
+    @Override
+    @Transactional
+    public void execute(Message message) {
+        String transactionId = message.getTransactionId();
+        String content = new String(message.getBody(), StandardCharsets.UTF_8);
+        JSONObject json = JSON.parseObject(content);
+
+        //分发到业务方法
+        addOrder(json.getString("orderId"), transactionId);
+    }
+}

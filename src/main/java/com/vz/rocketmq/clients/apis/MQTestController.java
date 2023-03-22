@@ -1,7 +1,9 @@
 package com.vz.rocketmq.clients.apis;
 
 import com.vz.rocketmq.clients.enums.MQTopic;
+import com.vz.rocketmq.clients.enums.MsgTag;
 import com.vz.rocketmq.clients.producer.MQProducerService;
+import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,7 +11,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
+import javax.annotation.Resource;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,9 +24,10 @@ import java.util.Map;
 @RequestMapping("/t")
 public class MQTestController {
     public static final Logger logger = LoggerFactory.getLogger(MQTestController.class);
-
     @Autowired
     private MQProducerService mqProducerService;
+    @Resource(name = "orderService")
+    private LocalTransactionHandler orderService;
 
     @RequestMapping("/t")
     public Map<String,Object> test(){
@@ -56,5 +59,16 @@ public class MQTestController {
             return index;
         });
         return true;
+    }
+
+    @RequestMapping("/sendTrans/{orderId}")
+    public Boolean sendTrans(@PathVariable("orderId") String orderId){
+        Map<String,Object> msg = new HashMap<>();
+        msg.put("orderId", orderId);
+        logger.info("订单添加通知start：orderId={}", orderId);
+        boolean result = mqProducerService.sendTransactionMessage(MQTopic.TEST_TOPIC_TRANSACTION,
+                MsgTag.TEST_TRANSACTION_TAG1, msg, orderService);
+        logger.info("订单添加通知end：orderId={}", orderId);
+        return result;
     }
 }
