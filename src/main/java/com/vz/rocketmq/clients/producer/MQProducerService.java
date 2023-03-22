@@ -3,6 +3,8 @@ package com.vz.rocketmq.clients.producer;
 import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.enums.MsgTag;
 import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -139,8 +141,9 @@ public interface MQProducerService {
      * @return 是否发送成功
      * 需配合事务监听器使用
      */
-    boolean sendTransactionMessage(MQTopic topic, MsgTag msgTag, Object msg);
-    boolean sendTransactionMessage(MQTopic topic, Object msg);
+    TransactionSendResult sendTransactionMessage(MQTopic topic, MsgTag msgTag, Object msg) throws MQClientException;
+    TransactionSendResult sendTransactionMessage(MQTopic topic, Object msg) throws MQClientException;
 
-    boolean sendTransactionMessage(MQTopic topic, MsgTag msgTag, Object msg, LocalTransactionHandler handler);
+    TransactionSendResult sendTransactionMessage(MQTopic topic, MsgTag msgTag,
+                                                 Object msg, LocalTransactionHandler handler) throws MQClientException;
 }

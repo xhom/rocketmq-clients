@@ -4,6 +4,8 @@ import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.enums.MsgTag;
 import com.vz.rocketmq.clients.producer.MQProducerService;
 import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
+import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,22 +55,22 @@ public class MQTestController {
     public Boolean sendOrderly(@PathVariable("msg") String msg){
         Integer buzId = Math.abs(msg.hashCode());
         logger.info("buzId={}", buzId);
-        mqProducerService.sendMessageOrderly(MQTopic.TEST_TOPIC, msg, buzId, mqNum->{
-            int index = buzId % mqNum;
-            logger.info("队列索引：{}, 队列总数：{}", index, mqNum);
+        mqProducerService.sendMessageOrderly(MQTopic.TEST_TOPIC, msg, buzId, totalMq->{
+            int index = buzId % totalMq;
+            logger.info("队列索引：{}, 队列总数：{}", index, totalMq);
             return index;
         });
         return true;
     }
 
     @RequestMapping("/sendTrans/{orderId}")
-    public Boolean sendTrans(@PathVariable("orderId") String orderId){
+    public TransactionSendResult sendTrans(@PathVariable("orderId") String orderId) throws MQClientException {
         Map<String,Object> msg = new HashMap<>();
         msg.put("orderId", orderId);
         logger.info("订单添加通知start：orderId={}", orderId);
-        boolean result = mqProducerService.sendTransactionMessage(MQTopic.TEST_TOPIC_TRANSACTION,
+        TransactionSendResult sendResult = mqProducerService.sendTransactionMessage(MQTopic.TEST_TOPIC_TRANSACTION,
                 MsgTag.TEST_TRANSACTION_TAG1, msg, orderService);
         logger.info("订单添加通知end：orderId={}", orderId);
-        return result;
+        return sendResult;
     }
 }

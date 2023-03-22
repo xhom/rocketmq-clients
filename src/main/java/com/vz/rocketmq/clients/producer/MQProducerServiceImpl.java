@@ -209,29 +209,26 @@ public class MQProducerServiceImpl implements MQProducerService {
     }
 
     @Override
-    public boolean sendTransactionMessage(MQTopic topic, MsgTag msgTag, Object msg) {
-        try{
-            //构建消息
-            Message message = buildMessage(topic, msgTag, null, msg);
-            //发送事务消息
-            TransactionSendResult sendResult = transactionMQProducer.sendMessageInTransaction(message, null);
-            logger.info("事务消息发送成功，msgId={}", sendResult.getMsgId());
-            return true;
-        }catch (MQClientException e) {
-            logger.info("事务消息发送失败:{}", e.getMessage(), e);
-        }
-        return false;
+    public TransactionSendResult sendTransactionMessage(MQTopic topic, MsgTag msgTag, Object msg) throws MQClientException{
+        //构建消息
+        Message message = buildMessage(topic, msgTag, null, msg);
+        //发送事务消息
+        TransactionSendResult sendResult = transactionMQProducer.sendMessageInTransaction(message, null);
+        logger.info("事务消息发送成功，msgId={}, sendStatus={}", sendResult.getMsgId(), sendResult.getSendStatus());
+
+        return sendResult;
     }
 
     @Override
-    public boolean sendTransactionMessage(MQTopic topic, Object msg) {
+    public TransactionSendResult sendTransactionMessage(MQTopic topic, Object msg) throws MQClientException {
         return sendTransactionMessage(topic, null, msg);
     }
 
     @Override
-    public boolean sendTransactionMessage(MQTopic topic, MsgTag msgTag, Object msg, LocalTransactionHandler handler) {
+    public TransactionSendResult sendTransactionMessage(MQTopic topic, MsgTag msgTag,
+                                                        Object msg, LocalTransactionHandler handler) throws MQClientException {
         //先注册处理器
-        mqTransactionListener.registry(msgTag, handler);
+        mqTransactionListener.registry(topic, msgTag, handler);
         //再发消息
         return sendTransactionMessage(topic, msgTag, msg);
     }

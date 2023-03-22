@@ -1,5 +1,6 @@
 package com.vz.rocketmq.clients.transaction;
 
+import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.enums.MsgTag;
 import com.vz.rocketmq.clients.service.TestCache;
 import org.apache.rocketmq.client.producer.LocalTransactionState;
@@ -24,18 +25,17 @@ public class MQTransactionListener implements TransactionListener {
     public static final Logger logger = LoggerFactory.getLogger(TransactionListener.class);
     /**
      * 使用本事务监听器的约定：
-     * 1.事务生产者发送的所有消息是同一个Topic
-     * 2.每一个具体的本地事务处理器需要使用不同的MsgTag，且保证唯一
+     * Topic+msgTag 对应唯一的一个处理器
      */
     //保存相同Topic下不同msgTag的业务处理器
     private static final Map<String, LocalTransactionHandler> localTransactionHandlers = new ConcurrentHashMap<>();
 
     //本地事务处理器注册
-    public void registry(MsgTag msgTag, LocalTransactionHandler handler){
-        LocalTransactionHandler _handler = localTransactionHandlers.get(msgTag.getValue());
-        if(Objects.isNull(_handler)){
-            //一个MsgTag只注册一次
-            localTransactionHandlers.put(msgTag.getValue(), handler);
+    public void registry(MQTopic topic, MsgTag msgTag, LocalTransactionHandler handler){
+        String handlerKey = topic.getValue() + "_" + (Objects.isNull(msgTag) ? "null" : msgTag.getValue());
+        if(Objects.isNull(localTransactionHandlers.get(handlerKey))){
+            //一个 Topic+MsgTag 只注册一次
+            localTransactionHandlers.put(handlerKey, handler);
         }
     }
 
@@ -55,7 +55,11 @@ public class MQTransactionListener implements TransactionListener {
         String transactionId = message.getTransactionId();
         try{
             logger.info("开始执行本地事务，transactionId={}", transactionId);
-            LocalTransactionHandler handler = localTransactionHandlers.get(message.getTags());
+            logger.info("localTransactionHandlers:{}", localTransactionHandlers);
+
+            String handlerKey = message.getTopic() + "_" + message.getTags();
+
+            LocalTransactionHandler handler = localTransactionHandlers.get(handlerKey);
             if(Objects.isNull(handler)){
                 logger.info("未找到已注册的本地事务处理器...");
                 //按提交成功处理
