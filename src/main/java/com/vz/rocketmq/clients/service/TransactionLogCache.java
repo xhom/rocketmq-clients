@@ -8,15 +8,11 @@ import java.util.concurrent.ConcurrentHashMap;
  * @description: 测试用，记录事务状态，实际应该保存在数据库中，并和业务SQL在同一个事务中
  * @date 2023/3/21 23:12
  */
-public class TestCache {
+public class TransactionLogCache {
     private static final Map<String, Boolean> transactionStates = new ConcurrentHashMap<>();
 
-    public static void commit(String transactionId){
+    public static void add(String transactionId){
         transactionStates.put(transactionId, Boolean.TRUE);
-    }
-
-    public static void rollback(String transactionId){
-        transactionStates.put(transactionId, Boolean.FALSE);
     }
 
     public static Boolean get(String transactionId){

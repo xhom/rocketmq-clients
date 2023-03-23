@@ -134,16 +134,11 @@ public interface MQProducerService {
     void sendMessageOneway(MQTopic topic, Object msg);
 
     /**
-     * 事务消息
-     * @param topic 消息发送的目标Topic名称
-     * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
+     * 事务消息发送
+     * @param handler 本地事务处理器（需注解标注Topic和MsgTag）
      * @param msg 消息内容
-     * @return 是否发送成功
+     * @return 发送结果
      * 需配合事务监听器使用
      */
-    TransactionSendResult sendTransactionMessage(MQTopic topic, MsgTag msgTag, Object msg) throws MQClientException;
-    TransactionSendResult sendTransactionMessage(MQTopic topic, Object msg) throws MQClientException;
-
-    TransactionSendResult sendTransactionMessage(MQTopic topic, MsgTag msgTag,
-                                                 Object msg, LocalTransactionHandler handler) throws MQClientException;
+    TransactionSendResult sendTransactionMessage(LocalTransactionHandler handler, Object msg) throws MQClientException;
 }

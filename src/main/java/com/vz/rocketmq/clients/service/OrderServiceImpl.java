@@ -2,12 +2,12 @@ package com.vz.rocketmq.clients.service;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
+import com.vz.rocketmq.clients.annotaion.LocalTransactionRegistry;
+import com.vz.rocketmq.clients.enums.MQTopic;
+import com.vz.rocketmq.clients.enums.MsgTag;
+import com.vz.rocketmq.clients.transaction.AbstractLocalTransactionHandler;
 import org.apache.rocketmq.common.message.Message;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,9 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2023/3/21 10:49
  */
 @Service("orderService")
-public class OrderServiceImpl implements OrderService, LocalTransactionHandler {
-    Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
-
+@LocalTransactionRegistry(topic = MQTopic.TEST_TOPIC_TRANSACTION, tag = MsgTag.TEST_TRANSACTION_TAG1)
+public class OrderServiceImpl extends AbstractLocalTransactionHandler implements OrderService{
     //测试用
     private final AtomicInteger transactionIndex = new AtomicInteger(0);
 
@@ -51,6 +50,6 @@ public class OrderServiceImpl implements OrderService, LocalTransactionHandler {
         addOrder(json.getString("orderId"));
 
         //记录事务状态
-        TestCache.commit(transactionId);
+        TransactionLogCache.add(transactionId);
     }
 }

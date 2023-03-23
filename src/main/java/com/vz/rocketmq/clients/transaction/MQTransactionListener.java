@@ -1,8 +1,9 @@
 package com.vz.rocketmq.clients.transaction;
 
+import com.vz.rocketmq.clients.annotaion.processor.LocalTransactionRegistryProcessor;
 import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.enums.MsgTag;
-import com.vz.rocketmq.clients.service.TestCache;
+import com.vz.rocketmq.clients.service.TransactionLogCache;
 import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.client.producer.TransactionListener;
 import org.apache.rocketmq.common.message.Message;
@@ -31,11 +32,14 @@ public class MQTransactionListener implements TransactionListener {
     private static final Map<String, LocalTransactionHandler> localTransactionHandlers = new ConcurrentHashMap<>();
 
     //本地事务处理器注册
-    public void registry(MQTopic topic, MsgTag msgTag, LocalTransactionHandler handler){
-        String handlerKey = topic.getValue() + "_" + (Objects.isNull(msgTag) ? "null" : msgTag.getValue());
+    public void registry(LocalTransactionHandler handler){
+        MQTopic topic = LocalTransactionRegistryProcessor.getTopic(handler);
+        MsgTag tag = LocalTransactionRegistryProcessor.getTag(handler);
+        String handlerKey = topic.getValue() + "_" + tag.getValue();
         if(Objects.isNull(localTransactionHandlers.get(handlerKey))){
             //一个 Topic+MsgTag 只注册一次
             localTransactionHandlers.put(handlerKey, handler);
+            logger.info("本地事务处理器注册成功：{} -> {}", handlerKey, handler.getClass().getName());
         }
     }
 
@@ -62,7 +66,7 @@ public class MQTransactionListener implements TransactionListener {
         logger.info("----------------------------------------------");
 
         //将消息分发到 Topic+MsgTag 对应的处理器
-        String handlerKey = message.getTopic() + "_" + message.getTags();
+        String handlerKey = ("" + message.getTopic() + "_" + message.getTags());
         LocalTransactionHandler handler = localTransactionHandlers.get(handlerKey);
         if(Objects.isNull(handler)){
             logger.info("未找到已注册的本地事务处理器...");
@@ -95,7 +99,7 @@ public class MQTransactionListener implements TransactionListener {
     public LocalTransactionState checkLocalTransaction(MessageExt messageExt) {
         String transactionId = messageExt.getTransactionId();
         logger.info("本地事务回查：transactionId={}", transactionId);
-        Boolean state = TestCache.get(transactionId);
+        Boolean state = TransactionLogCache.get(transactionId);
 
         if(Boolean.TRUE.equals(state)){
             logger.info("本地事务回查结果：已提交成功");

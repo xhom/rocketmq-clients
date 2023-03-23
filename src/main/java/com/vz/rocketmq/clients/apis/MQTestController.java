@@ -1,7 +1,6 @@
 package com.vz.rocketmq.clients.apis;
 
 import com.vz.rocketmq.clients.enums.MQTopic;
-import com.vz.rocketmq.clients.enums.MsgTag;
 import com.vz.rocketmq.clients.producer.MQProducerService;
 import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
 import org.apache.rocketmq.client.exception.MQClientException;
@@ -68,8 +67,7 @@ public class MQTestController {
         Map<String,Object> msg = new HashMap<>();
         msg.put("orderId", orderId);
         logger.info("订单添加通知start：orderId={}", orderId);
-        TransactionSendResult sendResult = mqProducerService.sendTransactionMessage(MQTopic.TEST_TOPIC_TRANSACTION,
-                MsgTag.TEST_TRANSACTION_TAG1, msg, orderService);
+        TransactionSendResult sendResult = mqProducerService.sendTransactionMessage(orderService, msg);
         logger.info("订单添加通知end：orderId={}", orderId);
         return sendResult;
     }

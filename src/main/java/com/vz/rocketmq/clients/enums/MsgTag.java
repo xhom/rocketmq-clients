@@ -11,6 +11,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public enum MsgTag {
+    NULL("null", "空标记（仅用于容错，不建议使用）"),
     TEST_TRANSACTION_TAG1("TEST_TRANSACTION_TAG1", "测试事务消息标记1"),
     TEST_TRANSACTION_TAG2("TEST_TRANSACTION_TAG2", "测试事务消息标记2");
 

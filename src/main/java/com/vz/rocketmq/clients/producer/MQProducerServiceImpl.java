@@ -1,6 +1,7 @@
 package com.vz.rocketmq.clients.producer;
 
 import com.alibaba.fastjson.JSON;
+import com.vz.rocketmq.clients.annotaion.processor.LocalTransactionRegistryProcessor;
 import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.enums.MsgTag;
 import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
@@ -209,7 +210,14 @@ public class MQProducerServiceImpl implements MQProducerService {
     }
 
     @Override
-    public TransactionSendResult sendTransactionMessage(MQTopic topic, MsgTag msgTag, Object msg) throws MQClientException{
+    public TransactionSendResult sendTransactionMessage(LocalTransactionHandler handler, Object msg) throws MQClientException {
+        //先注册处理器
+        mqTransactionListener.registry(handler);
+
+        //获取主题和标记
+        MQTopic topic = LocalTransactionRegistryProcessor.getTopic(handler);
+        MsgTag msgTag = LocalTransactionRegistryProcessor.getTag(handler);
+
         //构建消息
         Message message = buildMessage(topic, msgTag, null, msg);
         //发送事务消息
@@ -217,20 +225,6 @@ public class MQProducerServiceImpl implements MQProducerService {
         logger.info("事务消息发送成功，msgId={}, sendStatus={}", sendResult.getMsgId(), sendResult.getSendStatus());
 
         return sendResult;
-    }
-
-    @Override
-    public TransactionSendResult sendTransactionMessage(MQTopic topic, Object msg) throws MQClientException {
-        return sendTransactionMessage(topic, null, msg);
-    }
-
-    @Override
-    public TransactionSendResult sendTransactionMessage(MQTopic topic, MsgTag msgTag,
-                                                        Object msg, LocalTransactionHandler handler) throws MQClientException {
-        //先注册处理器
-        mqTransactionListener.registry(topic, msgTag, handler);
-        //再发消息
-        return sendTransactionMessage(topic, msgTag, msg);
     }
 
     /**
