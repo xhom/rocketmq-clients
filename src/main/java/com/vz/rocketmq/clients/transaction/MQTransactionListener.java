@@ -53,26 +53,31 @@ public class MQTransactionListener implements TransactionListener {
     @Override
     public LocalTransactionState executeLocalTransaction(Message message, Object o) {
         String transactionId = message.getTransactionId();
+        logger.info("开始执行本地事务，transactionId={}", transactionId);
+        logger.info("已注册的本地事务处理器:");
+        logger.info("----------------------------------------------");
+        localTransactionHandlers.forEach((k,v) -> {
+            logger.info("{}：{}", k, v.getClass().getName());
+        });
+        logger.info("----------------------------------------------");
+
+        //将消息分发到 Topic+MsgTag 对应的处理器
+        String handlerKey = message.getTopic() + "_" + message.getTags();
+        LocalTransactionHandler handler = localTransactionHandlers.get(handlerKey);
+        if(Objects.isNull(handler)){
+            logger.info("未找到已注册的本地事务处理器...");
+            //按提交成功处理
+            return LocalTransactionState.COMMIT_MESSAGE;
+        }
+
         try{
-            logger.info("开始执行本地事务，transactionId={}", transactionId);
-            logger.info("localTransactionHandlers:{}", localTransactionHandlers);
-
-            String handlerKey = message.getTopic() + "_" + message.getTags();
-
-            LocalTransactionHandler handler = localTransactionHandlers.get(handlerKey);
-            if(Objects.isNull(handler)){
-                logger.info("未找到已注册的本地事务处理器...");
-                //按提交成功处理
-                return LocalTransactionState.COMMIT_MESSAGE;
-            }
-
             //执行具体的业务逻辑
             handler.execute(message);
-
+            logger.info("执行本地事务成功，transactionId={}", transactionId);
             return LocalTransactionState.COMMIT_MESSAGE;
         }catch (Exception e){
             logger.info("执行本地事务异常：transactionId={}, message={}", transactionId, e.getMessage());
-            return LocalTransactionState.UNKNOW;
+            return LocalTransactionState.ROLLBACK_MESSAGE;
         }
     }
 
@@ -91,17 +96,13 @@ public class MQTransactionListener implements TransactionListener {
         String transactionId = messageExt.getTransactionId();
         logger.info("本地事务回查：transactionId={}", transactionId);
         Boolean state = TestCache.get(transactionId);
-        if(state == null){
-            logger.info("本地事务回查结果：未知");
-            return LocalTransactionState.ROLLBACK_MESSAGE;
-        }
 
-        if(state){
-            logger.info("本地事务回查结果：提交事务");
+        if(Boolean.TRUE.equals(state)){
+            logger.info("本地事务回查结果：已提交成功");
             return LocalTransactionState.COMMIT_MESSAGE;
         }else{
-            logger.info("本地事务回查结果：回滚事务");
-            return LocalTransactionState.ROLLBACK_MESSAGE;
+            logger.info("本地事务回查结果：未提交成功");
+            return LocalTransactionState.UNKNOW; //继续回查
         }
     }
 }
