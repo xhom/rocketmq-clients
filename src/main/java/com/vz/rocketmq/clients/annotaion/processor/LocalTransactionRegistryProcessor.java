@@ -8,6 +8,7 @@ import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * @author visy.wang
@@ -19,38 +20,33 @@ public class LocalTransactionRegistryProcessor {
     private static final Map<String,MsgTag> tagsCache = new HashMap<>();
 
     public static MQTopic getTopic(LocalTransactionHandler handler){
-        Class<?> clazz = handler.getClass();
-        MQTopic topic = topicsCache.get(clazz.getName());
-        if(Objects.nonNull(topic)){
-            return topic;
-        }
-
-        if(!clazz.isAnnotationPresent(LocalTransactionRegistry.class)){
-            return MQTopic.NULL;
-        }
-
-        LocalTransactionRegistry annotation = clazz.getAnnotation(LocalTransactionRegistry.class);
-        topic = annotation.topic();
-        topicsCache.put(clazz.getName(), topic);
-
-        return topic;
+        return getPropValue(handler, topicsCache, LocalTransactionRegistry::topic);
     }
 
     public static MsgTag getTag(LocalTransactionHandler handler){
+        return getPropValue(handler, tagsCache, LocalTransactionRegistry::tag);
+    }
+
+    private static <T> T getPropValue(LocalTransactionHandler handler,
+                                      Map<String,T> cacheMap, Function<LocalTransactionRegistry,T> valueGetter){
         Class<?> clazz = handler.getClass();
-        MsgTag tag = tagsCache.get(clazz.getName());
-        if(Objects.nonNull(tag)){
-            return tag;
+        String clazzName = clazz.getName();
+
+        //已缓存则直接返回
+        T value = cacheMap.get(clazzName);
+        if(Objects.nonNull(value)){
+            return value;
         }
 
+        //判断是否存在注解
         if(!clazz.isAnnotationPresent(LocalTransactionRegistry.class)){
-            return MsgTag.NULL;
+            throw new RuntimeException("确少必要的注解：@LocalTransactionRegistry，处理器类："+clazzName);
         }
 
-        LocalTransactionRegistry annotation = clazz.getAnnotation(LocalTransactionRegistry.class);
-        tag = annotation.tag();
-        tagsCache.put(clazz.getName(), tag);
+        //获取值并缓存
+        value = valueGetter.apply(clazz.getAnnotation(LocalTransactionRegistry.class));
+        cacheMap.put(clazzName, value);
 
-        return tag;
+        return value;
     }
 }
