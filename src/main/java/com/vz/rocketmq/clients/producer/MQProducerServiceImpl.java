@@ -5,7 +5,6 @@ import com.vz.rocketmq.clients.annotaion.processor.LocalTransactionRegistryProce
 import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.enums.MsgTag;
 import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
-import com.vz.rocketmq.clients.transaction.MQTransactionListener;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.*;
@@ -40,11 +39,6 @@ public class MQProducerServiceImpl implements MQProducerService {
      */
     @Autowired
     private TransactionMQProducer transactionMQProducer;
-    /**
-     * 事务消息监听器
-     */
-    @Autowired
-    private MQTransactionListener mqTransactionListener;
 
     @Override
     public boolean sendMessage(MQTopic topic, MsgTag msgTag, String msgKey, Object msg) {
@@ -211,9 +205,6 @@ public class MQProducerServiceImpl implements MQProducerService {
 
     @Override
     public TransactionSendResult sendTransactionMessage(LocalTransactionHandler handler, Object msg) throws MQClientException {
-        //先注册处理器
-        mqTransactionListener.registry(handler);
-
         //获取主题和标记
         MQTopic topic = LocalTransactionRegistryProcessor.getTopic(handler);
         MsgTag msgTag = LocalTransactionRegistryProcessor.getTag(handler);
