@@ -42,7 +42,6 @@ public class OrderServiceImpl implements OrderService, LocalTransactionHandler {
     }
 
     @Override
-    @Transactional
     public void execute(Message message) {
         String transactionId = message.getTransactionId();
         String content = new String(message.getBody(), StandardCharsets.UTF_8);
