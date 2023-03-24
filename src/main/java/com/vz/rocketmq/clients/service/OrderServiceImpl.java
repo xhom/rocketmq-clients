@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @date 2023/3/21 10:49
  */
 @Service("orderService")
-@LocalTransactionRegistry(topic = MQTopic.TEST_TOPIC_TRANSACTION, tag = MsgTag.TEST_TRANSACTION_TAG1)
+@LocalTransactionRegistry(topic = MQTopic.TEST_TOPIC_TRANSACTION, tag = MsgTag.TEST_TAG_TRANSACTION_1)
 public class OrderServiceImpl extends AbstractLocalTransactionHandler implements OrderService{
     //测试用
     private final AtomicInteger transactionIndex = new AtomicInteger(0);

@@ -4,9 +4,7 @@ import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.enums.MsgTag;
 import com.vz.rocketmq.clients.producer.MQProducerService;
 import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.LocalTransactionState;
-import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,12 +63,12 @@ public class MQTestController {
     }
 
     @RequestMapping("/sendTrans/{orderId}")
-    public LocalTransactionState sendTrans(@PathVariable("orderId") String orderId) throws MQClientException {
+    public Boolean sendTrans(@PathVariable("orderId") String orderId){
         Map<String,Object> msg = new HashMap<>();
         msg.put("orderId", orderId);
         logger.info("订单添加通知start：orderId={}", orderId);
-        LocalTransactionState state = mqProducerService.sendTransactionMessage(MQTopic.TEST_TOPIC_TRANSACTION, MsgTag.TEST_TRANSACTION_TAG1, msg);
+        LocalTransactionState state = mqProducerService.sendTransactionMessage(MQTopic.TEST_TOPIC_TRANSACTION, MsgTag.TEST_TAG_TRANSACTION_1, msg);
         logger.info("订单添加通知end：orderId={}", orderId);
-        return state;
+        return LocalTransactionState.COMMIT_MESSAGE.equals(state);
     }
 }
