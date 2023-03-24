@@ -27,6 +27,14 @@ public class LocalTransactionRegistryProcessor {
         return getPropValue(handler, tagsCache, LocalTransactionRegistry::tag);
     }
 
+    public static boolean isAnnotationPresent(LocalTransactionHandler handler){
+        return isAnnotationPresent(handler.getClass());
+    }
+
+    private static boolean isAnnotationPresent(Class<?> clazz){
+        return clazz.isAnnotationPresent(LocalTransactionRegistry.class);
+    }
+
     private static <T> T getPropValue(LocalTransactionHandler handler,
                                       Map<String,T> cacheMap, Function<LocalTransactionRegistry,T> valueGetter){
         Class<?> clazz = handler.getClass();
@@ -39,8 +47,8 @@ public class LocalTransactionRegistryProcessor {
         }
 
         //判断是否存在注解
-        if(!clazz.isAnnotationPresent(LocalTransactionRegistry.class)){
-            throw new RuntimeException("确少必要的注解：@LocalTransactionRegistry，处理器类："+clazzName);
+        if(!isAnnotationPresent(clazz)){
+            return null;
         }
 
         //获取值并缓存

@@ -4,6 +4,7 @@ import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.enums.MsgTag;
 import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
 import org.apache.rocketmq.client.exception.MQClientException;
+import org.apache.rocketmq.client.producer.LocalTransactionState;
 import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -135,10 +136,13 @@ public interface MQProducerService {
 
     /**
      * 事务消息发送
-     * @param handler 本地事务处理器（需注解标注Topic和MsgTag）
+     * @param topic 消息发送的目标Topic名称
+     * @param msgTag 消息Tag，用于消费端根据指定Tag过滤消息
+     * @param msgKey 消息索引键，可根据关键字精确查找某条消息
      * @param msg 消息内容
-     * @return 发送结果
-     * 需配合事务监听器使用
+     * @return 发送结果: 本地事务执行状态
      */
-    TransactionSendResult sendTransactionMessage(LocalTransactionHandler handler, Object msg) throws MQClientException;
+    LocalTransactionState sendTransactionMessage(MQTopic topic, MsgTag msgTag, String msgKey, Object msg);
+    LocalTransactionState sendTransactionMessage(MQTopic topic, MsgTag msgTag, Object msg);
+    LocalTransactionState sendTransactionMessage(MQTopic topic, Object msg);
 }

@@ -28,11 +28,15 @@ public class MQTransactionListener implements TransactionListener {
      * 使用本事务监听器的约定：
      * Topic+msgTag 对应唯一的一个处理器
      */
-    //保存相同Topic下不同msgTag的业务处理器
+    //保存每个Topic-MsgTag 对应的业务处理器
     private static final Map<String, LocalTransactionHandler> localTransactionHandlers = new ConcurrentHashMap<>();
 
     //本地事务处理器注册
     public void registry(LocalTransactionHandler handler){
+        if(!LocalTransactionRegistryProcessor.isAnnotationPresent(handler)){
+            //没有注解不能注册
+            return;
+        }
         MQTopic topic = LocalTransactionRegistryProcessor.getTopic(handler);
         MsgTag tag = LocalTransactionRegistryProcessor.getTag(handler);
         String handlerKey = topic.getValue() + "_" + tag.getValue();
@@ -66,7 +70,7 @@ public class MQTransactionListener implements TransactionListener {
         logger.info("----------------------------------------------");
 
         //将消息分发到 Topic+MsgTag 对应的处理器
-        String handlerKey = ("" + message.getTopic() + "_" + message.getTags());
+        String handlerKey = message.getTopic() + "_" + message.getTags();
         LocalTransactionHandler handler = localTransactionHandlers.get(handlerKey);
         if(Objects.isNull(handler)){
             logger.info("未找到已注册的本地事务处理器...");
