@@ -11,6 +11,7 @@ import java.lang.annotation.*;
  * @date 2023/3/23 10:23
  */
 @Inherited
+@Documented
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface LocalTransactionRegistry {

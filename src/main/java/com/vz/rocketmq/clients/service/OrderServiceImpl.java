@@ -5,7 +5,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.vz.rocketmq.clients.annotaion.LocalTransactionRegistry;
 import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.enums.MsgTag;
-import com.vz.rocketmq.clients.transaction.AbstractLocalTransactionHandler;
+import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
 import org.apache.rocketmq.common.message.Message;
 import org.springframework.stereotype.Service;
 
@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 @Service("orderService")
 @LocalTransactionRegistry(topic = MQTopic.TEST_TOPIC_TRANSACTION, tag = MsgTag.TEST_TAG_TRANSACTION_1)
-public class OrderServiceImpl extends AbstractLocalTransactionHandler implements OrderService{
+public class OrderServiceImpl implements OrderService, LocalTransactionHandler {
     //测试用
     private final AtomicInteger transactionIndex = new AtomicInteger(0);
 
