@@ -16,8 +16,6 @@ logging:
 rocketmq:
   # 生产者配置
   producer:
-    # 配置开关 true/false
-    isOn: true
     # 生产组名称
     groupName: PRODUCER_GROUP_1
     # MQ NameServer地址
@@ -33,8 +31,6 @@ rocketmq:
 
   # 消费者配置
   consumer:
-    # 配置开关 true/false
-    isOn: true
     # 消费组名称
     groupName: CONSUME_GROUP_1
     # MQ NameServer地址

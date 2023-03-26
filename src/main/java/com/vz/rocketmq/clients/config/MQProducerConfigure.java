@@ -8,12 +8,14 @@ import org.apache.rocketmq.client.producer.TransactionMQProducer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author visy.wang
@@ -56,7 +58,6 @@ public class MQProducerConfigure {
     private MQTransactionListener transactionListener;
 
     @Bean
-    @ConditionalOnProperty(prefix = "rocketmq.producer", value = "isOn", havingValue = "true")
     public DefaultMQProducer defaultMQProducer() throws MQClientException {
         logger.info("MQ生产者正在创建...");
 
@@ -73,7 +74,6 @@ public class MQProducerConfigure {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix = "rocketmq.producer", value = "isOn", havingValue = "true")
     public TransactionMQProducer transactionMQProducer() throws MQClientException{
         logger.info("MQ生产者（事务消息）正在创建...");
         TransactionMQProducer producer = new TransactionMQProducer(transGroupName);

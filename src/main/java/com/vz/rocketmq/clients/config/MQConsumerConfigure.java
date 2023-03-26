@@ -8,7 +8,6 @@ import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -59,7 +58,6 @@ public class MQConsumerConfigure {
      * @return 默认消费者
      */
     @Bean //通过容器实例化调用此方法完成消费者的创建，实际使用中并不会注入：defaultMQPushConsumer
-    @ConditionalOnProperty(prefix = "rocketmq.consumer", value = "isOn", havingValue = "true")
     public DefaultMQPushConsumer defaultConsumer(){
         logger.info("MQ消费者正在创建...");
         DefaultMQPushConsumer consumer = new DefaultMQPushConsumer(groupName);
