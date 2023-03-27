@@ -16,7 +16,7 @@ import java.util.Objects;
  * @date 2023/3/27 0:40
  */
 @Component
-public class LocalTransactionHandlerDiscoverer implements ApplicationListener<ContextRefreshedEvent> {
+public class LocalTransactionDiscoverer implements ApplicationListener<ContextRefreshedEvent> {
     @Autowired
     private MQTransactionListener mqTransactionListener;
 
