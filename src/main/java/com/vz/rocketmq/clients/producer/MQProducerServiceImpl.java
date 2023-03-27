@@ -1,10 +1,8 @@
 package com.vz.rocketmq.clients.producer;
 
 import com.alibaba.fastjson.JSON;
-import com.vz.rocketmq.clients.annotaion.processor.LocalTransactionRegistryProcessor;
 import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.enums.MsgTag;
-import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
 import org.apache.rocketmq.client.exception.MQBrokerException;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.*;
@@ -67,13 +65,13 @@ public class MQProducerServiceImpl implements MQProducerService {
 
     @Override
     public boolean sendMessageOrderly(MQTopic topic, MsgTag msgTag, String msgKey, Object msg,
-                                      Object orderId, Function<Integer, Integer> selector) {
+                                      Object buzId, Function<Integer, Integer> selector) {
         try{
             Message message = buildMessage(topic, msgTag, msgKey, msg);
             SendResult sendResult = defaultMQProducer.send(message, (List<MessageQueue> mqs, Message _msg, Object arg) -> {
                 int index = selector.apply(mqs.size());
                 return mqs.get(index);
-            }, orderId);
+            }, buzId);
             logger.info("消息发送成功，msgId={}", sendResult.getMsgId());
             return true;
         }catch (MQClientException | RemotingException | MQBrokerException | InterruptedException e){

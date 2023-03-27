@@ -2,10 +2,7 @@ package com.vz.rocketmq.clients.producer;
 
 import com.vz.rocketmq.clients.enums.MQTopic;
 import com.vz.rocketmq.clients.enums.MsgTag;
-import com.vz.rocketmq.clients.transaction.LocalTransactionHandler;
-import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.LocalTransactionState;
-import org.apache.rocketmq.client.producer.TransactionSendResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
