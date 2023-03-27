@@ -12,11 +12,11 @@ import java.util.Objects;
 
 /**
  * @author visy.wang
- * @description: 本地事务处理器监视器
+ * @description: 本地事务处理器发现者
  * @date 2023/3/27 0:40
  */
 @Component
-public class LocalTransactionMonitor implements ApplicationListener<ContextRefreshedEvent> {
+public class LocalTransactionHandlerDiscoverer implements ApplicationListener<ContextRefreshedEvent> {
     @Autowired
     private MQTransactionListener mqTransactionListener;
 
