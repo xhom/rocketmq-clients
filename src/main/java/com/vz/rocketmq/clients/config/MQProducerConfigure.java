@@ -69,7 +69,7 @@ public class MQProducerConfigure {
         producer.setRetryTimesWhenSendAsyncFailed(retryTimes);
         producer.start();
 
-        logger.info("MQ生产者创建成功!");
+        logger.info("MQ生产者创建成功，生产组：{}，NameServer地址：{}", groupName, nameSrvAddr);
         return producer;
     }
 
@@ -78,8 +78,6 @@ public class MQProducerConfigure {
         logger.info("MQ事务生产者正在创建...");
         TransactionMQProducer producer = new TransactionMQProducer(transGroupName);
         producer.setNamesrvAddr(nameSrvAddr);
-        //创建事务监听器
-        //MQTransactionListener transactionListener = new MQTransactionListener();
         //创建回查的线程池
         int corePoolSize = 2, maxPoolSize = 5;
         long keepAliveTime = 100;
@@ -96,7 +94,7 @@ public class MQProducerConfigure {
 
         producer.start();
 
-        logger.info("MQ事务生产者创建成功!");
+        logger.info("MQ事务生产者创建成功，生产组：{}，NameServer地址：{}", transGroupName, nameSrvAddr);
         return producer;
     }
 }
