@@ -44,7 +44,7 @@ public class MQConsumerConfigure {
      */
     private Integer maxThreads;
     /**
-     * 一次消费消息的条数
+     * 单次最大消费数
      */
     private Integer maxConsumeSize;
     /**

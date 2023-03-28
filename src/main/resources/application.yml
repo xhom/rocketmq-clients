@@ -41,5 +41,5 @@ rocketmq:
     minThreads: 1
     # 消费者最大线程数
     maxThreads: 3
-    # 单词最大消费数
+    # 单次最大消费数
     maxConsumeSize: 1
