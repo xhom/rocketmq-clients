@@ -39,11 +39,14 @@ public class MQTransactionListener implements TransactionListener {
         }
         MQTopic topic = LocalTransactionRegistryProcessor.getTopic(handler);
         MsgTag tag = LocalTransactionRegistryProcessor.getTag(handler);
+        String handlerName = handler.getClass().getName();
         String handlerKey = topic.getValue() + "_" + tag.getValue();
-        if(!localTransactionHandlers.containsKey(handlerKey)){
+        if(localTransactionHandlers.containsKey(handlerKey)){
+            throw new IllegalArgumentException("本地事务处理器不允许重复注册：" + handlerName);
+        }else{
             //一个 Topic+MsgTag 只注册一次
             localTransactionHandlers.put(handlerKey, handler);
-            logger.info("本地事务处理器注册成功：{} -> {}", handlerKey, handler.getClass().getName());
+            logger.info("本地事务处理器注册成功：{} -> {}", handlerKey, handlerName);
         }
     }
 
