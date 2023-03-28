@@ -40,7 +40,7 @@ public class MQTransactionListener implements TransactionListener {
         MQTopic topic = LocalTransactionRegistryProcessor.getTopic(handler);
         MsgTag tag = LocalTransactionRegistryProcessor.getTag(handler);
         String handlerKey = topic.getValue() + "_" + tag.getValue();
-        if(Objects.isNull(localTransactionHandlers.get(handlerKey))){
+        if(!localTransactionHandlers.containsKey(handlerKey)){
             //一个 Topic+MsgTag 只注册一次
             localTransactionHandlers.put(handlerKey, handler);
             logger.info("本地事务处理器注册成功：{} -> {}", handlerKey, handler.getClass().getName());
@@ -90,7 +90,7 @@ public class MQTransactionListener implements TransactionListener {
     }
 
     /**
-     * 检查本地事务
+     * 回查本地事务状态
      * 此方法是由于二次确认消息没有收到，Broker端回查事务状态的方法
      * 回查规则：
      * 本地事务执行完成后，若Broker端收到的本地事务返回状态为LocalTransactionState.UNKNOW，
