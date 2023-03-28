@@ -75,7 +75,7 @@ public class MQProducerConfigure {
 
     @Bean
     public TransactionMQProducer transactionMQProducer() throws MQClientException{
-        logger.info("MQ生产者（事务消息）正在创建...");
+        logger.info("MQ事务生产者正在创建...");
         TransactionMQProducer producer = new TransactionMQProducer(transGroupName);
         producer.setNamesrvAddr(nameSrvAddr);
         //创建事务监听器
@@ -96,7 +96,7 @@ public class MQProducerConfigure {
 
         producer.start();
 
-        logger.info("MQ生产者（事务消息）创建成功!");
+        logger.info("MQ事务生产者创建成功!");
         return producer;
     }
 }

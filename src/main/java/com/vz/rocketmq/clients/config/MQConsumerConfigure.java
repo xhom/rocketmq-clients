@@ -12,6 +12,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * @author visy.wang
  * @description: RocketMQ消费者配置
@@ -34,7 +37,7 @@ public class MQConsumerConfigure {
     /**
      * 订阅的主题
      */
-    private String topics;
+    private List<String> topics = new ArrayList<>();
     /**
      * 消费者最小线程数
      */
@@ -81,16 +84,15 @@ public class MQConsumerConfigure {
 
         try {
             // 设置该消费者订阅的主题和tag，如果订阅该主题下的所有tag，则使用*,
-            String[] topicArr = topics.split(";");
-            for (String topic : topicArr) {
-                String[] tagArr = topic.split("~");
+            for(String topic: topics){
+                String[] topicArr = topic.split("~");
                 //可以订阅多个 topic+tag 组合
-                consumer.subscribe(tagArr[0], tagArr[1]);
+                consumer.subscribe(topicArr[0], topicArr[1]);
+                logger.info("MQ消费者({})订阅信息：Topic：{}，Tag：{}", groupName, topicArr[0], topicArr[1]);
             }
             //启动消费者
             consumer.start();
-            logger.info("MQ消费者创建成功，消费组：{}, 订阅主题：{}, NameServer地址：{}",
-                    groupName, topics, nameSrvAddr);
+            logger.info("MQ消费者创建成功，消费组：{}，NameServer地址：{}", groupName, nameSrvAddr);
         } catch (MQClientException e) {
             logger.info("MQ消费者创建失败，错误信息：{}", e.getMessage(), e);
         }

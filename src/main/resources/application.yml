@@ -35,8 +35,11 @@ rocketmq:
     groupName: CONSUME_GROUP_1
     # MQ NameServer地址
     nameSrvAddr: 127.0.0.1:9876
-    # 订阅的topic+tags 格式(自己约定的): topic~tag1;topic~tag2;topic~* （*代表所有tag）
-    topics: TEST_TOPIC~*;TEST_TOPIC_TRANSACTION~*
+    # 订阅的topic+tags 格式(自己约定的): topic和tag之间用“~”隔开，“*”代表所有tag，多个tag之间用“||”隔开
+    topics:
+      - TEST_TOPIC~*
+      - TEST_TOPIC_TRANSACTION~*
+      - TEST_TOPIC2~TAG1||TAG2
     # 消费者最小线程数
     minThreads: 1
     # 消费者最大线程数
