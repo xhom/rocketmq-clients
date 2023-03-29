@@ -30,7 +30,7 @@ public class MQConsumeMsgListener implements MessageListenerConcurrently {
     @Override
     public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> list, ConsumeConcurrentlyContext context) {
         if (CollectionUtils.isEmpty(list)) {
-            logger.info("MQ接收消息为空，直接返回成功");
+            logger.info("MQ并发消费接收消息为空");
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
         }
         MessageExt msg = list.get(0);
@@ -45,8 +45,9 @@ public class MQConsumeMsgListener implements MessageListenerConcurrently {
 
             return ConsumeConcurrentlyStatus.CONSUME_SUCCESS; //消费成功
         } catch (Exception e) {
-            logger.error("获取MQ消息内容异常{}",e.getMessage(), e);
-            return ConsumeConcurrentlyStatus.RECONSUME_LATER; //消费失败，重新就回到队列，等待下次消费
+            logger.error("MQ并发消费异常：{}", e.getMessage(), e);
+            //消费失败，重新就回到队列，等待下次消费
+            return ConsumeConcurrentlyStatus.RECONSUME_LATER;
         }
     }
 }
